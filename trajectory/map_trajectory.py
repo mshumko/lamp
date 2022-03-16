@@ -72,14 +72,14 @@ def plot_trajectory(trajectory, alt='nominal', ax=None, color='k'):
     ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
     ax[1].plot(trajectory['Time'], trajectory[alt_key], color=color)
     ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
-    ax[1].set(xlabel='Time since launch [seconds]', ylabel='Altitude [deg]')
+    ax[1].set(xlabel='Time since launch [seconds]', ylabel='Altitude [km]')
     return
 
 if __name__ == '__main__':
     name = 'lamp_nominal_trajectory.csv'
     path = pathlib.Path(__file__).parents[0] / name
 
-    alt_km = 90
+    alt_km = None
     trajectory = load_trajectory(path)
 
     if alt_km is not None:
