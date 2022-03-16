@@ -3,6 +3,7 @@ import pathlib
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 import IRBEM
 
@@ -28,7 +29,8 @@ def map_trajectory(trajectory, alt, suffix='nominal'):
     suffix: str
         The column suffixes to use to index.
     """
-    trajectory[[f'Lat_{alt}km', f'Lon_{alt}km', f'Alt_{alt}km']] = np.nan
+    keys_IRBEM_order = [f'Alt_{alt}km', f'Lat_{alt}km', f'Lon_{alt}km']
+    trajectory[keys_IRBEM_order] = np.nan
     m = IRBEM.MagFields(kext='None')  # IGRF with no extrnal model.
     maginput = None
 
@@ -43,13 +45,34 @@ def map_trajectory(trajectory, alt, suffix='nominal'):
         else:
             raise NotImplementedError
         footprint_output = m.find_foot_point(LLA, maginput, alt, 0)
-        trajectory.loc[i, [f'Alt_{alt}km', f'Lat_{alt}km', f'Lon_{alt}km']] = footprint_output['XFOOT']
+        trajectory.loc[i, keys_IRBEM_order] = footprint_output['XFOOT']
+    
+    # Replace -1E31 IRBEM errors with np.nan
+    trajectory.loc[trajectory[f'Alt_{alt}km'] < 0, keys_IRBEM_order] = np.nan
     return trajectory
+
+def plot_trajectory(trajectory, alt='nominal', ax=None):
+    """
+    Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
+    """
+    if ax is None:
+        _, ax = plt.subplots(1, 2)
+    if alt is None:
+        alt_key = f'Alt_nominal'
+        lat_key = f'Lat_nominal'
+        lon_key = f'Lon_nominal'
+    else:
+        alt_key = f'Alt_{alt}km'
+        lat_key = f'Lat_{alt}km'
+        lon_key = f'Lon_{alt}km'
+    
+    return
 
 if __name__ == '__main__':
     name = 'lamp_nominal_trajectory.csv'
     path = pathlib.Path(__file__).parents[0] / name
-    
+
+    alt_km = 90
     trajectory = load_trajectory(path)
-    trajectory = map_trajectory(trajectory, 90)
-    pass
+    trajectory = map_trajectory(trajectory, alt_km)
+    plot_trajectory(trajectory, alt_km)
