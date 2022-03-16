@@ -51,7 +51,7 @@ def map_trajectory(trajectory, alt, suffix='nominal'):
     trajectory.loc[trajectory[f'Alt_{alt}km'] < 0, keys_IRBEM_order] = np.nan
     return trajectory
 
-def plot_trajectory(trajectory, alt='nominal', ax=None):
+def plot_trajectory(trajectory, alt='nominal', ax=None, color='k'):
     """
     Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
     """
@@ -61,11 +61,18 @@ def plot_trajectory(trajectory, alt='nominal', ax=None):
         alt_key = f'Alt_nominal'
         lat_key = f'Lat_nominal'
         lon_key = f'Lon_nominal'
+        
+        plt.suptitle('LAMP nominal trajectory')
     else:
         alt_key = f'Alt_{alt}km'
         lat_key = f'Lat_{alt}km'
         lon_key = f'Lon_{alt}km'
+        plt.suptitle(f'LAMP trajectory\nmapped with IGRF to {alt} km')
     
+    ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
+    ax[1].plot(trajectory['Time'], trajectory[alt_key], color=color)
+    ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
+    ax[1].set(xlabel='Time since launch [seconds]', ylabel='Altitude [deg]')
     return
 
 if __name__ == '__main__':
@@ -75,4 +82,8 @@ if __name__ == '__main__':
     alt_km = 90
     trajectory = load_trajectory(path)
     trajectory = map_trajectory(trajectory, alt_km)
-    plot_trajectory(trajectory, alt_km)
+
+    _, ax = plt.subplots(1, 2)
+    plot_trajectory(trajectory, alt=alt_km, ax=ax)
+    ax[1].set_ylim(0, None)
+    plt.show()
