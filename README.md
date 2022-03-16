@@ -1,2 +1,2 @@
-# lamp
-Scripts and files for the LAMP sounding rocket flight
+# LAMP
+Scripts and files for the Loss through Auroral Microburst Pulsations (LAMP) sounding rocket flight
