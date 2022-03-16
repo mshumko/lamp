@@ -81,9 +81,12 @@ if __name__ == '__main__':
 
     alt_km = 90
     trajectory = load_trajectory(path)
-    trajectory = map_trajectory(trajectory, alt_km)
 
-    _, ax = plt.subplots(1, 2)
+    if alt_km is not None:
+        trajectory = map_trajectory(trajectory, alt_km)
+
+    _, ax = plt.subplots(1, 2, figsize=(10, 5))
     plot_trajectory(trajectory, alt=alt_km, ax=ax)
     ax[1].set_ylim(0, None)
+    plt.tight_layout()
     plt.show()
