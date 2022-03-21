@@ -51,33 +51,6 @@ def plot_map(trajectory, alt=None, apogee=True):
         ax.set_title(title + f'\nmap_alt = {alt} km')
     return ax
 
-def plot_timeseries(trajectory, alt=None, ax=None, color='k'):
-    """
-    Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
-    """
-    # if ax is None:
-    #     _, ax = plt.subplots(1, 2)
-    if alt is None:
-        alt_key = f'Alt'
-        lat_key = f'Lat'
-        lon_key = f'Lon'
-        plt.suptitle(f'LAMP | {trajectory.index[0].date()} | rocket trajectory')
-    else:
-        alt_key = f'Alt_{alt}km'
-        lat_key = f'Lat_{alt}km'
-        lon_key = f'Lon_{alt}km'
-        plt.suptitle(f'LAMP | {trajectory.index[0].date()} | {alt} km footprint trajectory | IGRF')
-    
-    ax = plot_alaska(ax=ax)
-    ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
-    ax[1].plot(trajectory.index, trajectory[alt_key], color=color)
-    ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
-    ax[1].set(xlabel='Time [HH:MM:SS]', ylabel='Altitude [km]')
-    tfmt = matplotlib.dates.DateFormatter('%H:%M:%S')
-    ax[1].xaxis.set_major_formatter(tfmt)
-    ax[1].xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(6))
-    return
-
 if __name__ == '__main__':
     data_dir = pathlib.Path(__file__).parents[0]
     path = data_dir / 'lamp_actual_trajectory_mapped_IGRF.csv'
@@ -91,10 +64,3 @@ if __name__ == '__main__':
             plt.savefig('lamp_trajectory.png')
         else:
             plt.savefig(f'lamp_{alt}_km_footprint_trajectory.png')
-    # plt.show()
-
-    # _, ax = plt.subplots(1, 2, figsize=(10, 5))
-    # plot_trajectory(trajectory, alt=90, ax=ax)
-    # ax[1].set_ylim(0, None)
-    # plt.tight_layout()
-    # plt.show()
