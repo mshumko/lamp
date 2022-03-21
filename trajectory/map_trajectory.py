@@ -18,6 +18,7 @@ def load_trajectory(path, t0=None):
     trajectory = pd.read_csv(path, index_col=0)
     trajectory = trajectory.loc[trajectory.index > 0, :]  # Remove times before launch.
     trajectory.columns = [column.lstrip() for column in trajectory.columns]  # Clean column names
+    trajectory = trajectory.loc[:, ['Lat', 'Lon', 'Alt']]
     
     if t0 is not None:
         if isinstance(t0, str):
