@@ -38,42 +38,45 @@ def plot_map(trajectory, alt=None, apogee=True):
 
     if alt is None:
         ax.plot(trajectory['Lon'], trajectory['Lat'], 'r', transform=ccrs.PlateCarree())
-
-    if apogee:
-        idt = np.argmax(trajectory['Alt'])
+    else:
+        ax.plot(trajectory[f'Lon_{alt}km'], trajectory[f'Lat_{alt}km'], 'r', transform=ccrs.PlateCarree())
 
     ax.set_extent((-170, -130, 55, 75), crs=ccrs.PlateCarree())
-    ax.set_title(f'LAMP flight trajectory | {trajectory.index[0].date()}\n'
-        f'{trajectory.index[0].strftime("%H:%M:%S")} - {trajectory.index[-1].strftime("%H:%M:%S")}'
-        )
+
+    title = (f'LAMP flight trajectory | {trajectory.index[0].date()}\n'
+            f'{trajectory.index[0].strftime("%H:%M:%S")} - {trajectory.index[-1].strftime("%H:%M:%S")}')
+    if alt is None:
+        ax.set_title(title)
+    else:
+        ax.set_title(title + f'\nmap_alt = {alt} km')
     return ax
 
-# def plot_trajectory(trajectory, alt=None, ax=None, color='k'):
-#     """
-#     Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
-#     """
-#     # if ax is None:
-#     #     _, ax = plt.subplots(1, 2)
-#     if alt is None:
-#         alt_key = f'Alt'
-#         lat_key = f'Lat'
-#         lon_key = f'Lon'
-#         plt.suptitle(f'LAMP | {trajectory.index[0].date()} | rocket trajectory')
-#     else:
-#         alt_key = f'Alt_{alt}km'
-#         lat_key = f'Lat_{alt}km'
-#         lon_key = f'Lon_{alt}km'
-#         plt.suptitle(f'LAMP | {trajectory.index[0].date()} | {alt} km footprint trajectory | IGRF')
+def plot_timeseries(trajectory, alt=None, ax=None, color='k'):
+    """
+    Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
+    """
+    # if ax is None:
+    #     _, ax = plt.subplots(1, 2)
+    if alt is None:
+        alt_key = f'Alt'
+        lat_key = f'Lat'
+        lon_key = f'Lon'
+        plt.suptitle(f'LAMP | {trajectory.index[0].date()} | rocket trajectory')
+    else:
+        alt_key = f'Alt_{alt}km'
+        lat_key = f'Lat_{alt}km'
+        lon_key = f'Lon_{alt}km'
+        plt.suptitle(f'LAMP | {trajectory.index[0].date()} | {alt} km footprint trajectory | IGRF')
     
-#     ax = plot_alaska(ax=ax)
-#     ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
-#     ax[1].plot(trajectory.index, trajectory[alt_key], color=color)
-#     ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
-#     ax[1].set(xlabel='Time [HH:MM:SS]', ylabel='Altitude [km]')
-#     tfmt = matplotlib.dates.DateFormatter('%H:%M:%S')
-#     ax[1].xaxis.set_major_formatter(tfmt)
-#     ax[1].xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(6))
-#     return
+    ax = plot_alaska(ax=ax)
+    ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
+    ax[1].plot(trajectory.index, trajectory[alt_key], color=color)
+    ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
+    ax[1].set(xlabel='Time [HH:MM:SS]', ylabel='Altitude [km]')
+    tfmt = matplotlib.dates.DateFormatter('%H:%M:%S')
+    ax[1].xaxis.set_major_formatter(tfmt)
+    ax[1].xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(6))
+    return
 
 if __name__ == '__main__':
     data_dir = pathlib.Path(__file__).parents[0]
@@ -81,9 +84,14 @@ if __name__ == '__main__':
 
     trajectory = load_trajectory(path)
 
-    plot_map(trajectory)
-    plt.tight_layout()
-    plt.show()
+    for alt in [None, 90, 100, 110, 120, 130, 140, 150]:
+        plot_map(trajectory, alt=alt)
+        plt.tight_layout()
+        if alt is None:
+            plt.savefig('lamp_trajectory.png')
+        else:
+            plt.savefig(f'lamp_{alt}_km_footprint_trajectory.png')
+    # plt.show()
 
     # _, ax = plt.subplots(1, 2, figsize=(10, 5))
     # plot_trajectory(trajectory, alt=90, ax=ax)
