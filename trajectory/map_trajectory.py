@@ -103,9 +103,4 @@ if __name__ == '__main__':
         save_path = data_dir / f'lamp_actual_trajectory_mapped_IGRF.csv'
         mapped_trajectory = map_trajectory(trajectory, alt)
         
-        # _, ax = plt.subplots(1, 2, figsize=(10, 5))
-        # plot_trajectory(mapped_trajectory, alt=alt, ax=ax)
-        # ax[1].set_ylim(0, None)
-        # plt.tight_layout()
-        # plt.show()
     mapped_trajectory.to_csv(save_path, index_label='Time')
