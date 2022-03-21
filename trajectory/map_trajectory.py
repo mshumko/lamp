@@ -55,7 +55,10 @@ def map_trajectory(trajectory, map_alt):
         trajectory.loc[time, footprint_keys_irbem_order] = footprint_output['XFOOT']
         # Calculate the L-Shell and MLT
         mag_coords_output = m.make_lstar(position, maginput)
-        trajectory.loc[time, ['L', 'MLT']] = [mag_coords_output['Lm'][0], mag_coords_output['MLT'][0]]
+        trajectory.loc[time, ['L', 'MLT']] = [
+            np.abs(mag_coords_output['Lm'][0]), # Applied abs() so that -L shells in the BLC do not confuse whomever uses this data.
+            mag_coords_output['MLT'][0]
+            ]
 
     
     # Replace -1E31 IRBEM errors with np.nan
@@ -97,13 +100,12 @@ if __name__ == '__main__':
 
     alts = np.arange(90, 160, 10)
     for alt in alts:
-        save_path = data_dir / f'lamp_actual_trajectory_mapped_{alt}_km.csv'
+        save_path = data_dir / f'lamp_actual_trajectory_mapped_IGRF.csv'
         mapped_trajectory = map_trajectory(trajectory, alt)
-        mapped_trajectory.to_csv(save_path, index_label='Time')
-
+        
         # _, ax = plt.subplots(1, 2, figsize=(10, 5))
         # plot_trajectory(mapped_trajectory, alt=alt, ax=ax)
         # ax[1].set_ylim(0, None)
         # plt.tight_layout()
         # plt.show()
-        pass
+    mapped_trajectory.to_csv(save_path, index_label='Time')
