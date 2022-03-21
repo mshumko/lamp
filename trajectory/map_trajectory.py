@@ -1,19 +1,26 @@
 # Map LAMP's trajectory along magnetic field lines to a specified auroral emission altitude.
 import pathlib
+import dateutil.parser
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.dates
+import matplotlib.ticker
 
 import IRBEM
 
 
-def load_trajectory(path):
+def load_trajectory(path, t0=None):
     """
     Loads the csv trajectory file containing at least Time, Lat, Lon, and Alt columns.
     """
-    trajectory = pd.read_csv(path)
-    # This is short for now, but the actual trajectory will have times to convert.
+    trajectory = pd.read_csv(path, index_col=0)
+    
+    if t0 is not None:
+        if isinstance(t0, str):
+            t0 = dateutil.parser.parse(t0)
+        trajectory.index = pd.to_timedelta(trajectory.index, unit='second') + t0
     return trajectory
 
 def map_trajectory(trajectory, alt, suffix='nominal'):
@@ -51,7 +58,7 @@ def map_trajectory(trajectory, alt, suffix='nominal'):
     trajectory.loc[trajectory[f'Alt_{alt}km'] < 0, keys_IRBEM_order] = np.nan
     return trajectory
 
-def plot_trajectory(trajectory, alt='nominal', ax=None, color='k'):
+def plot_trajectory(trajectory, alt=None, ax=None, color='k'):
     """
     Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
     """
@@ -70,23 +77,34 @@ def plot_trajectory(trajectory, alt='nominal', ax=None, color='k'):
         plt.suptitle(f'LAMP trajectory\nmapped with IGRF to {alt} km')
     
     ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
-    ax[1].plot(trajectory['Time'], trajectory[alt_key], color=color)
+    ax[1].plot(trajectory.index, trajectory[alt_key], color=color)
     ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
-    ax[1].set(xlabel='Time since launch [seconds]', ylabel='Altitude [km]')
+    ax[1].set(xlabel='Time [HH:MM:SS]', ylabel='Altitude [km]')
+    tfmt = matplotlib.dates.DateFormatter('%H:%M:%S')
+    ax[1].xaxis.set_major_formatter(tfmt)
+    ax[1].xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(5))
     return
 
 if __name__ == '__main__':
-    name = 'lamp_nominal_trajectory.csv'
-    path = pathlib.Path(__file__).parents[0] / name
+    t0 = '2022-03-05T11:27:30'
+    data_dir = pathlib.Path(__file__).parents[0]
+    path = data_dir / 'lamp_nominal_trajectory.csv'
+    trajectory = load_trajectory(path, t0=t0)
 
-    alt_km = None
-    trajectory = load_trajectory(path)
+    alts = np.arange(90, 160, 10)
+    for alt in alts:
+        save_path = data_dir / f'lamp_nominal_trajectory_mapped_{alt}_km.csv'
+        mapped_trajectory = map_trajectory(trajectory, alt)
+        mapped_trajectory.to_csv(save_path, index_label='Time')
 
-    if alt_km is not None:
-        trajectory = map_trajectory(trajectory, alt_km)
+        _, ax = plt.subplots(1, 2, figsize=(10, 5))
+        plot_trajectory(mapped_trajectory, alt=alt, ax=ax)
+        ax[1].set_ylim(0, None)
+        plt.tight_layout()
+        plt.show()
 
-    _, ax = plt.subplots(1, 2, figsize=(10, 5))
-    plot_trajectory(trajectory, alt=alt_km, ax=ax)
-    ax[1].set_ylim(0, None)
-    plt.tight_layout()
-    plt.show()
+    # _, ax = plt.subplots(1, 2, figsize=(10, 5))
+    # plot_trajectory(trajectory, alt=alt_km, ax=ax)
+    # ax[1].set_ylim(0, None)
+    # plt.tight_layout()
+    # plt.show()
