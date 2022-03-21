@@ -65,33 +65,6 @@ def map_trajectory(trajectory, map_alt):
     trajectory.loc[trajectory[f'Alt_{alt}km'] < 0, footprint_keys_irbem_order] = np.nan
     return trajectory
 
-def plot_trajectory(trajectory, alt=None, ax=None, color='k'):
-    """
-    Makes a figure with 2 subplots: the lat/lon trajectory and altitude vs time.
-    """
-    if ax is None:
-        _, ax = plt.subplots(1, 2)
-    if alt is None:
-        alt_key = f'Alt_nominal'
-        lat_key = f'Lat_nominal'
-        lon_key = f'Lon_nominal'
-        
-        plt.suptitle('LAMP nominal trajectory')
-    else:
-        alt_key = f'Alt_{alt}km'
-        lat_key = f'Lat_{alt}km'
-        lon_key = f'Lon_{alt}km'
-        plt.suptitle(f'LAMP trajectory\nmapped with IGRF to {alt} km')
-    
-    ax[0].plot(trajectory[lon_key], trajectory[lat_key], color=color)
-    ax[1].plot(trajectory.index, trajectory[alt_key], color=color)
-    ax[0].set(xlabel='Longitude [deg]', ylabel='Latitude [deg]')
-    ax[1].set(xlabel='Time [HH:MM:SS]', ylabel='Altitude [km]')
-    tfmt = matplotlib.dates.DateFormatter('%H:%M:%S')
-    ax[1].xaxis.set_major_formatter(tfmt)
-    ax[1].xaxis.set_major_locator(matplotlib.ticker.MaxNLocator(5))
-    return
-
 if __name__ == '__main__':
     t0 = '2022-03-05T11:27:30'
     data_dir = pathlib.Path(__file__).parents[0]
